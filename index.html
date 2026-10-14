@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Mark Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            /* Pointing to your local image properties file combination */
+            background-image: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.2)), url('education_pattern.jpeg');
+            background-repeat: repeat;
+            background-size: 350px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .calculator-card {
+            background: #ffffff; 
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1); 
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid rgba(0, 0, 0, 0.05); 
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+            text-align: center;
+            font-size: 24px;
+        }
+        .formula-preview {
+            background-color: #f0f0f0;
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-left: 5px solid #4CAF50;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2e7d32;
+            text-align: center;
+            display: none;
+            line-height: 1.5;
+        }
+        /* Custom layout block style for your new text addition */
+        .reassess-note {
+            display: block;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed rgba(46, 125, 50, 0.3);
+            font-size: 15px;
+            font-weight: 600;
+            color: #e65100; /* Subtle orange tint distinct from primary green output */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator-card">
+        <h2>Exam Grade Calculator</h2>
+        <div class="formula-preview">Formula: 2(Y - X/2)</div>
+        
+        <div class="input-group">
+            <label for="currentMark">Current Course Mark (X) %</label>
+            <input type="number" id="currentMark" placeholder="e.g. 65" min="0" max="100">
+        </div>
+
+        <div class="input-group">
+            <label for="targetMark">Target Overall Mark (Y) %</label>
+            <input type="number" id="targetMark" placeholder="e.g. 50" min="0" max="100">
+        </div>
+
+        <button onclick="calculateExamScore()">Calculate Required Exam Mark</button>
+
+        <div class="result" id="resultDisplay"></div>
+    </div>
+
+    <script>
+        function calculateExamScore() {
+            const X = parseFloat(document.getElementById('currentMark').value);
+            const Y = parseFloat(document.getElementById('targetMark').value);
+            const resultDisplay = document.getElementById('resultDisplay');
+
+            // 1. Basic validation to ensure numbers are typed in
+            if (isNaN(X) || isNaN(Y)) {
+                showError("Please enter valid numbers!");
+                return;
+            }
+
+            // 2. Strict Rule: X and Y must not be greater than 100
+            if (X > 100 || Y > 100) {
+                showError("Marks cannot be greater than 100%!");
+                return;
+            }
+
+            // 3. COMBINED CHECK: If BOTH inputs fail the academic requirements
+            if (X < 40 && Y < 50) {
+                showError("Invalid input");
+                return;
+            }
+
+            // 4. Individual Rule: X must be 40 or higher to qualify
+            if (X < 40) {
+                showError("Sorry you don't qualify");
+                return;
+            }
+
+            // 5. Individual Rule: Y must be 50 or higher
+            if (Y < 50) {
+                showError("Target should be greater or equal to 50 (Pass mark is 50%)");
+                return;
+            }
+
+            // --- RUN ALGEBRAIC FORMULA ---
+            let requiredExamMark = (2 * Y) - X;
+            requiredExamMark = Math.round(requiredExamMark * 10) / 10;
+
+            // --- RUN REASSESSMENT BOUNDS (from your paper equations) ---
+            let lowerBound = 90 - X; // Simplifies 2(45 - X/2)
+            let upperBound = 98 - X; // Simplifies 2(49 - X/2)
+
+            // Clamp results to 0% if math hits a negative number
+            let displayLower = lowerBound < 0 ? 0 : lowerBound;
+            let displayUpper = upperBound < 0 ? 0 : upperBound;
+
+            // Display Success Styles
+            resultDisplay.style.display = "block";
+            resultDisplay.style.backgroundColor = "#e8f5e9";
+            resultDisplay.style.borderLeft = "5px solid #4CAF50";
+            resultDisplay.style.color = "#2e7d32";
+
+            let mainMessage = "";
+            if (requiredExamMark <= 0) {
+                mainMessage = "You've already passed your target! You technically need a 0% on the exam.";
+            } else if (requiredExamMark > 100) {
+                mainMessage = `You need a ${requiredExamMark}% on the exam to hit that target, which is over 100%.`;
+            } else {
+                mainMessage = `You need to get at least ${requiredExamMark}% on the exam.`;
+            }
+
+            // Combine both target result and the custom phrase in a single layout box
+            resultDisplay.innerHTML = `
+                <div>${mainMessage}</div>
+                <div class="reassess-note">
+                    Any mark between ${displayLower}% and ${displayUpper}% qualifies you for reassessment.
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            const resultDisplay = document.getElementById('resultDisplay');
+            resultDisplay.style.display = "block";
+            resultDisplay.style.backgroundColor = "#ffebee";
+            resultDisplay.style.borderLeft = "5px solid #c62828";
+            resultDisplay.style.color = "#c62828";
+            resultDisplay.innerHTML = message;
+        }
+    </script>
+
+</body>
+</html>
